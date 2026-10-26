@@ -1,0 +1,15 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>University Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"></head>
+<body><i class="orb a"></i><i class="orb b"></i><i class="orb c"></i>
+<main id="login" class="center"><form id="loginForm" class="glass card" data-mode="in">
+<h1>University Management System</h1><p id="uni" class="sub">Sign in to continue</p>
+<p id="err" class="err" role="alert" hidden></p>
+<label id="nameF" hidden>Full name<input name="full_name" autocomplete="name"></label>
+<label>Email<input name="email" type="email" required autocomplete="email"></label>
+<label>Password<input name="password" type="password" required minlength="6" autocomplete="current-password"></label>
+<button class="btn wide" id="submit">Sign in</button>
+<button type="button" class="link" id="toggle">New student? Create an account</button></form></main>
+<div id="app" hidden><aside class="glass side"><div class="brand"><b>UMS</b><span id="uniS"></span></div><nav id="nav"></nav>
+<div class="me"><span id="who"></span><em id="role"></em><button class="btn ghost wide" id="logout">Log out</button></div></aside><section id="main"></section></div>
+<dialog id="dlg" class="glass"></dialog><div id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script><script src="app.js"></script></body></html>
