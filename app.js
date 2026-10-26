@@ -20,7 +20,7 @@ const pass=()=>+cfg.pass_score||75;
 
 // ---- Auth flow: login -> validate -> role -> dashboard -> logout
 const fail=m=>{const e=$('#err');e.textContent=m;e.hidden=false;const p=$('[name=password]');p.value='';p.focus()};
-async function loadCfg(){cfg=Object.fromEntries((await rows('settings')).map(s=>[s.key,s.value]));const n=cfg.university_name||'';$('#uni').textContent=n||'Sign in to continue';$('#uniS').textContent=n}
+async function loadCfg(){cfg=Object.fromEntries((await rows('settings')).map(s=>[s.key,s.value]));const n=(cfg.university_name&&cfg.university_name!=='My University')?cfg.university_name:'National University';$('#uni').textContent=n;$('#uniS').textContent=n}
 $('#loginForm').onsubmit=async e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target)),up=e.target.dataset.mode==='up';
  const role=f.role||'student';
  const{data,error}=up?await db.auth.signUp({email:f.email,password:f.password,options:{data:{full_name:f.full_name,role}}}):await db.auth.signInWithPassword({email:f.email,password:f.password});

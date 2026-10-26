@@ -5,7 +5,7 @@ create table enrollments(id bigint generated always as identity primary key,clas
 create table grades(id bigint generated always as identity primary key,class_id bigint references classes on delete cascade,student_id uuid references profiles on delete cascade,score numeric,remarks text,unique(class_id,student_id));
 create table announcements(id bigint generated always as identity primary key,title text not null,body text,created_at timestamptz default now());
 create table settings(key text primary key,value text);
-insert into settings values('university_name','My University'),('pass_score','75'),('max_score','100');
+insert into settings values('university_name','National University'),('pass_score','75'),('max_score','100');
 
 create function my_role() returns text language sql security definer stable set search_path=public as $$ select role from profiles where id=auth.uid() $$;
 create or replace function handle_new_user() returns trigger language plpgsql security definer set search_path=public as $$
