@@ -1,7 +1,7 @@
 // 1) Paste your Supabase project values (Project Settings > API)
 const SUPABASE_URL='https://ggtfdkdbotoesxktugni.supabase.co',SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdndGZka2Rib3RvZXN4a3R1Z25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5OTQyNTIsImV4cCI6MjEwODU3MDI1Mn0.zBmv3WaIuRc7XmkHJJpfC3Xe2dEaWULi83tASX2gyqk';
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const $=s=>document.querySelector(s),roles=['admin','teacher','student'],roleLabels={admin:'🛡️ Admin',teacher:'👨‍🏫 Teacher',student:'📚 Student'};
+const $=s=>document.querySelector(s),roles=['admin','teacher','student'],roleLabels={admin:'Admin',teacher:'Teacher',student:'Student'};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let me,cfg={},cur,gc,cache={},uFilter='all';
 const toast=(m,bad)=>{const t=$('#toast');t.textContent=m;t.className='show'+(bad?' bad':'');setTimeout(()=>t.className='',3200)};

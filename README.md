@@ -8,7 +8,7 @@ A lightweight and responsive University Management System built with HTML, CSS, 
 
 The system supports **3 distinct user types**, each with dedicated dashboard views and permissions:
 
-1. **🛡️ Admin**:
+1. **Admin**:
    - Manage all users: filter by role (Admin, Teacher, Student), switch user roles instantly, or remove accounts.
    - Manage classes and course records; assign teachers to classes.
    - Enroll students into classes.
@@ -16,13 +16,13 @@ The system supports **3 distinct user types**, each with dedicated dashboard vie
    - Configure university settings (university name, passing score, maximum score).
    - View analytics dashboard with role breakdowns, grade statistics, and export CSV reports.
 
-2. **👨‍🏫 Teacher**:
+2. **Teacher**:
    - View assigned classes and student enrollments.
    - Input and update student grades and custom remarks.
    - Access student academic performance records.
    - View university announcements and generate class reports.
 
-3. **📚 Student**:
+3. **Student**:
    - View enrolled classes and weekly class schedule (room, time, day).
    - View grades, remarks, and pass/fail status in real-time.
    - Read campus announcements.
