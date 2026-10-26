@@ -4,12 +4,33 @@ A lightweight and responsive University Management System built with HTML, CSS, 
 
 ## Features
 
-- **Role-Based Access Control**:
-  - **Admin**: Manage users, assign roles, create and manage classes, enroll students, post announcements, configure system settings, view reports, and export CSV.
-  - **Teacher**: View assigned classes, input and update student grades, view student performance.
-  - **Student**: View enrolled classes, check schedules, view grades and remarks, read university announcements.
-- **Modern UI**: Clean glassmorphism styling, responsive layout, fluid micro-interactions.
-- **Supabase Backend**: Authentication, PostgreSQL database with Row Level Security (RLS), and real-time triggers.
+## User Roles & Capabilities
+
+The system supports **3 distinct user types**, each with dedicated dashboard views and permissions:
+
+1. **🛡️ Admin**:
+   - Manage all users: filter by role (Admin, Teacher, Student), switch user roles instantly, or remove accounts.
+   - Manage classes and course records; assign teachers to classes.
+   - Enroll students into classes.
+   - Publish, edit, and delete campus-wide announcements.
+   - Configure university settings (university name, passing score, maximum score).
+   - View analytics dashboard with role breakdowns, grade statistics, and export CSV reports.
+
+2. **👨‍🏫 Teacher**:
+   - View assigned classes and student enrollments.
+   - Input and update student grades and custom remarks.
+   - Access student academic performance records.
+   - View university announcements and generate class reports.
+
+3. **📚 Student**:
+   - View enrolled classes and weekly class schedule (room, time, day).
+   - View grades, remarks, and pass/fail status in real-time.
+   - Read campus announcements.
+   - View and edit student profile.
+
+### Registration & Role Assignment
+- When signing up, users can select their **Account Type** (`Student`, `Teacher`, or `Admin`).
+- Administrators can also switch any user's role on the fly directly in the **Manage Users** dashboard.
 
 ## Project Structure
 

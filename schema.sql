@@ -8,9 +8,21 @@ create table settings(key text primary key,value text);
 insert into settings values('university_name','My University'),('pass_score','75'),('max_score','100');
 
 create function my_role() returns text language sql security definer stable set search_path=public as $$ select role from profiles where id=auth.uid() $$;
-create function handle_new_user() returns trigger language plpgsql security definer set search_path=public as $$
-begin insert into profiles(id,email,full_name) values(new.id,new.email,coalesce(new.raw_user_meta_data->>'full_name',split_part(new.email,'@',1))); return new; end $$;
-create trigger on_signup after insert on auth.users for each row execute function handle_new_user();
+create or replace function handle_new_user() returns trigger language plpgsql security definer set search_path=public as $$
+begin 
+  insert into profiles(id,email,full_name,role) 
+  values(
+    new.id,
+    new.email,
+    coalesce(new.raw_user_meta_data->>'full_name',split_part(new.email,'@',1)),
+    case 
+      when new.raw_user_meta_data->>'role' in ('admin','teacher','student') then new.raw_user_meta_data->>'role'
+      else 'student'
+    end
+  ); 
+  return new; 
+end $$;
+create or replace trigger on_signup after insert on auth.users for each row execute function handle_new_user();
 
 alter table profiles enable row level security;alter table classes enable row level security;alter table enrollments enable row level security;
 alter table grades enable row level security;alter table announcements enable row level security;alter table settings enable row level security;
@@ -29,5 +41,14 @@ create policy a_admin on announcements for all to authenticated using(my_role()=
 create policy s_read on settings for select to anon,authenticated using(true);
 create policy s_admin on settings for all to authenticated using(my_role()='admin') with check(my_role()='admin');
 
--- After creating your first account, make it an admin:
--- update profiles set role='admin' where email='you@example.com';
+-- =========================================================================
+-- USER ROLES MANAGEMENT: admin, teacher, student
+-- =========================================================================
+-- Assign or switch a user's role anytime:
+-- update profiles set role = 'admin' where email = 'admin@example.com';
+-- update profiles set role = 'teacher' where email = 'teacher@example.com';
+-- update profiles set role = 'student' where email = 'student@example.com';
+--
+-- View users grouped by role:
+-- select role, count(*) from profiles group by role;
+-- select id, full_name, email, role, created_at from profiles order by role, full_name;
