@@ -19,7 +19,16 @@ const del=(t,k='id')=>async id=>{if(confirm('Delete this item?')){await q(db.fro
 const pass=()=>+cfg.pass_score||75;
 
 // ---- Auth flow: login -> validate -> role -> dashboard -> logout
-const fail=m=>{const e=$('#err');e.textContent=m;e.hidden=false;const p=$('[name=password]');p.value='';p.focus()};
+const fail=m=>{
+  const e=$('#err');
+  if(m&&m.includes('Signups not allowed')){
+    e.innerHTML='<b>Signups not allowed:</b> Naka-off ang public signups sa iyong Supabase project.<br><small style="font-weight:normal;display:block;margin-top:4px">Pumunta sa <b>Supabase Dashboard &gt; Authentication &gt; Providers &gt; Email</b> at i-ON ang <b>"Allow new users to sign up"</b> (Enable Signups).</small>';
+  }else{
+    e.textContent=m;
+  }
+  e.hidden=false;
+  const p=$('[name=password]');p.value='';p.focus();
+};
 async function loadCfg(){cfg=Object.fromEntries((await rows('settings')).map(s=>[s.key,s.value]));const n=(cfg.university_name&&cfg.university_name!=='My University')?cfg.university_name:'National University';$('#uni').textContent=n;$('#uniS').textContent=n}
 $('#loginForm').onsubmit=async e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target)),up=e.target.dataset.mode==='up';
  const role=f.role||'student';
