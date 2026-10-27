@@ -31,7 +31,7 @@ const fail=m=>{
 };
 async function loadCfg(){cfg=Object.fromEntries((await rows('settings')).map(s=>[s.key,s.value]));const n=(cfg.university_name&&cfg.university_name!=='My University')?cfg.university_name:'National University';$('#uni').textContent=n;$('#uniS').textContent=n}
 $('#loginForm').onsubmit=async e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target)),up=e.target.dataset.mode==='up';
- const role=f.role||'student';
+ const role=(f.role||'student').toLowerCase().trim();
  const{data,error}=up?await db.auth.signUp({email:f.email,password:f.password,options:{data:{full_name:f.full_name,role}}}):await db.auth.signInWithPassword({email:f.email,password:f.password});
  if(error)return fail(up?error.message:'Invalid credentials. Please try again.');
  if(!data.session)return fail('Check your email to confirm your account, then sign in.');
@@ -40,6 +40,7 @@ $('#loginForm').onsubmit=async e=>{e.preventDefault();const f=Object.fromEntries
 $('#toggle').onclick=()=>{const f=$('#loginForm'),up=f.dataset.mode==='in';f.dataset.mode=up?'up':'in';$('#nameF').hidden=!up;$('#roleF').hidden=!up;$('#submit').textContent=up?'Create account':'Sign in';$('#toggle').textContent=up?'Have an account? Sign in':'Need an account? Sign up';$('#err').hidden=true};
 async function enter(u){await loadCfg();const{data:p}=await db.from('profiles').select('*').eq('id',u.id).maybeSingle();
  if(!p){await db.auth.signOut();return fail('No active profile for this account. Contact an administrator.')}
+ p.role=(p.role||'student').toLowerCase().trim();
  me=p;$('#login').hidden=true;$('#app').hidden=false;$('#who').textContent=p.full_name||p.email;
  const rb=$('#role');rb.textContent=roleLabels[p.role]||p.role;rb.className='role-badge '+p.role;
  const v=VIEWS[p.role]||VIEWS.student;$('#nav').innerHTML=Object.entries(v).map(([k,x])=>`<button data-go="${k}">${x[0]}</button>`).join('');go(Object.keys(v)[0])}
@@ -47,7 +48,7 @@ $('#logout').onclick=async()=>{await db.auth.signOut();me=null;$('#app').hidden=
 async function go(k){cur=k;document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.go===k));$('#main').innerHTML=await (VIEWS[me.role]||VIEWS.student)[k][1]()}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]'),n=e.target.closest('[data-go]');if(b)A[b.dataset.act](b.dataset.id);if(n)go(n.dataset.go)});
 document.addEventListener('change',async e=>{const t=e.target;if(t.id==='gc'){gc=t.value;go(cur)}
- if(t.dataset.role){await q(db.from('profiles').update({role:t.value}).eq('id',t.dataset.role));toast('Role updated')}});
+ if(t.dataset.role){await q(db.from('profiles').update({role:t.value.toLowerCase().trim()}).eq('id',t.dataset.role));toast('Role updated')}});
 
 // ---- Views
 async function vUsers(){const p=await rows('profiles','*',x=>x.order('full_name'));
