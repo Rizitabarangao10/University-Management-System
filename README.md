@@ -29,7 +29,8 @@ The system supports **3 distinct user types**, each with dedicated dashboard vie
    - View and edit student profile.
 
 ### Registration & Role Assignment
-- When signing up, users can select their **Account Type** (`Student`, `Teacher`, or `Admin`).
+- When signing up, users can select their **Account Type** (`Student` or `Teacher`). The `Admin` role cannot be self-registered; it is assigned via SQL (see Setup step 5).
+- **Forgot password?** on the sign-in form emails a reset link to the account's email address; opening it lets the user set a new password.
 - Administrators can also switch any user's role on the fly directly in the **Manage Users** dashboard.
 
 ## Project Structure

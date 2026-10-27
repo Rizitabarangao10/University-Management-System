@@ -29,7 +29,7 @@ declare
   v_role text;
 begin 
   v_role := lower(trim(coalesce(new.raw_user_meta_data->>'role', 'student')));
-  if v_role not in ('admin', 'teacher', 'student') then
+  if v_role not in ('teacher', 'student') then -- admin cannot be self-registered; promote via SQL / Manage users
     v_role := 'student';
   end if;
 
@@ -97,7 +97,7 @@ create policy s_admin on settings for all to authenticated using(my_role()='admi
 -- declare v_role text;
 -- begin
 --   v_role := lower(trim(coalesce(new.raw_user_meta_data->>'role', 'student')));
---   if v_role not in ('admin', 'teacher', 'student') then v_role := 'student'; end if;
+-- if v_role not in ('teacher', 'student') then v_role := 'student'; end if;
 --   insert into public.profiles (id, email, full_name, role)
 --   values (new.id, new.email, coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)), v_role)
 --   on conflict (id) do update set role = excluded.role, full_name = coalesce(excluded.full_name, profiles.full_name);

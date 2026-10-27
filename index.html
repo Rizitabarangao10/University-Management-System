@@ -6,14 +6,15 @@
 <div class="logo-wrap"><img src="logo.png" alt="National University Logo" class="login-logo"></div>
 <h1>University Management System</h1><p id="uni" class="sub">National University</p>
 <p id="err" class="err" role="alert" hidden></p>
+<p id="ok" class="ok" role="status" hidden></p>
 <label id="nameF" hidden>Full name<input name="full_name" autocomplete="name"></label>
 <label id="roleF" hidden>Account Type (Role)<select name="role">
 <option value="student">Student</option>
 <option value="teacher">Teacher</option>
-<option value="admin">Admin</option>
 </select></label>
-<label>Email<input name="email" type="email" required autocomplete="email"></label>
-<label>Password<input name="password" type="password" required minlength="6" autocomplete="current-password"></label>
+<label id="emailF">Email<input name="email" type="email" required autocomplete="email"></label>
+<label id="passF"><span id="passL">Password</span><input name="password" type="password" required minlength="6" autocomplete="current-password"></label>
+<button type="button" class="link forgot" id="forgot">Forgot password?</button>
 <button class="btn wide" id="submit">Sign in</button>
 <button type="button" class="link" id="toggle">Need an account? Sign up</button></form></main>
 <div id="app" hidden><aside class="glass side"><div class="brand"><img src="logo.png" alt="National University Logo" class="side-logo"><div class="brand-text"><b>UMS</b><span id="uniS">National University</span></div></div><nav id="nav"></nav>
