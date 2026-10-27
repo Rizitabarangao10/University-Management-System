@@ -10,14 +10,23 @@
   --tx-muted:#556987;
   --border-light:#d9e3f0;
 }
+html{
+  overflow-x:hidden;
+  -webkit-text-size-adjust:100%;
+}
 *{box-sizing:border-box}[hidden]{display:none!important}
 body{
   margin:0;
   min-height:100vh;
-  font:15px/1.5 Manrope,system-ui,sans-serif;
+  min-height:100dvh;
+  font:15px/1.5 Manrope,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   color:#ffffff;
   background:linear-gradient(135deg,#0c1a40 0%,#162f74 50%,#20429a 100%);
   background-attachment:fixed;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  -webkit-tap-highlight-color:transparent;
 }
 .orb{position:fixed;border-radius:50%;filter:blur(90px);opacity:.35;z-index:-1}
 .a{width:460px;height:460px;background:#3b82f6;top:-120px;left:-100px;opacity:.28}
@@ -388,18 +397,24 @@ dialog form{display:grid;gap:14px}
 .profile-logout-sec{margin-top:8px;padding-top:16px;border-top:1px solid #e2e8f0}
 .profile-logout-sec .btn{width:100%;padding:12px;font-size:14px}
 
-/* Responsive Layout for Mobile Phone Users */
+/* Responsive Layout for Mobile Phone Users (All Android & iOS Models) */
 @media(max-width:800px){
   #app{
     display:flex !important;
     flex-direction:column !important;
-    padding:8px 10px !important;
+    padding-top:max(8px, env(safe-area-inset-top)) !important;
+    padding-right:max(10px, env(safe-area-inset-right)) !important;
+    padding-bottom:max(16px, env(safe-area-inset-bottom)) !important;
+    padding-left:max(10px, env(safe-area-inset-left)) !important;
     gap:12px !important;
     min-height:100vh !important;
+    min-height:100dvh !important;
+    width:100% !important;
+    box-sizing:border-box !important;
   }
   .side{
     position:sticky !important;
-    top:6px !important;
+    top:max(6px, env(safe-area-inset-top)) !important;
     z-index:90 !important;
     flex:none !important;
     height:auto !important;
@@ -420,9 +435,11 @@ dialog form{display:grid;gap:14px}
   }
   .side-logo{
     height:34px;
+    flex-shrink:0;
   }
   .brand-text b{
-    font-size:19px;
+    font-size:clamp(16px, 4.5vw, 19px);
+    line-height:1.1;
   }
   .brand-text span{
     font-size:10px;
@@ -595,15 +612,35 @@ dialog form{display:grid;gap:14px}
 }
 
 @media(max-width:480px){
-  .brand-text b{
-    font-size:18px;
-  }
   .tabs{
     gap:6px;
   }
   .tabs .btn{
     font-size:12px;
     padding:6px 10px;
+  }
+}
+
+/* Extra-compact phones (e.g., iPhone SE, Galaxy Z Flip cover, small Android devices) */
+@media(max-width:380px){
+  .brand-text b{
+    font-size:15px !important;
+  }
+  .brand-text span{
+    font-size:9px !important;
+  }
+  .side-logo{
+    height:28px !important;
+  }
+  .live-status{
+    padding:2px 6px !important;
+    font-size:9px !important;
+  }
+  .nav-toggle-btn{
+    padding:4px 6px !important;
+  }
+  .card{
+    padding:20px 14px !important;
   }
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
