@@ -298,21 +298,21 @@ dialog form{display:grid;gap:14px}
   font-size:10px;
 }
 
-/* Mobile Menu Toggle Button */
-.mobile-menu-btn{
+/* Nav Toggle Button */
+.nav-toggle-btn{
   display:none;
   background:none;
-  border:1px solid rgba(255,255,255,.2);
+  border:1px solid rgba(255,255,255,.25);
   color:#ffffff;
-  padding:7px;
+  padding:6px 8px;
   border-radius:10px;
   cursor:pointer;
   line-height:0;
-  transition:background .2s;
+  transition:all .2s;
 }
-.mobile-menu-btn:hover{
-  background:rgba(255,255,255,.15);
-}
+.nav-toggle-btn:hover{background:rgba(255,255,255,.15)}
+.nav-toggle-btn.active{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
+.side-menu{display:flex;flex-direction:column;flex:1;gap:18px}
 
 /* User Profile Avatar in Sidebar */
 .user-profile-bar{display:flex;align-items:center;gap:12px;margin-bottom:6px}
@@ -385,6 +385,8 @@ dialog form{display:grid;gap:14px}
 .avatar-actions{display:grid;gap:6px}
 .hint-text{color:#64748b;font-size:11px}
 .profile-details{display:grid;gap:12px}
+.profile-logout-sec{margin-top:8px;padding-top:16px;border-top:1px solid #e2e8f0}
+.profile-logout-sec .btn{width:100%;padding:12px;font-size:14px}
 
 /* Responsive Layout for Mobile Phone Users */
 @media(max-width:800px){
@@ -402,13 +404,16 @@ dialog form{display:grid;gap:14px}
     min-height:unset;
     padding:10px 14px;
     border-radius:18px;
-    gap:8px;
+    gap:0;
     box-shadow:0 8px 24px rgba(0,0,0,.35);
   }
   .brand{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
     padding-bottom:0;
     border-bottom:0;
-    gap:10px;
+    gap:8px;
   }
   .side-logo{
     height:34px;
@@ -419,48 +424,54 @@ dialog form{display:grid;gap:14px}
   .brand-text span{
     font-size:10px;
   }
-  .mobile-menu-btn{
-    display:none !important;
-  }
-  /* Mobile Swipeable Nav Bar with Crisp Fixed-Height Pills */
-  nav{
-    flex:none !important;
-    display:flex !important;
-    flex-direction:row !important;
-    align-items:center !important;
-    overflow-x:auto !important;
-    overflow-y:hidden !important;
-    white-space:nowrap !important;
-    gap:8px !important;
-    padding:4px 0 !important;
-    margin:0 !important;
-    -webkit-overflow-scrolling:touch !important;
-    scrollbar-width:none !important;
-  }
-  nav::-webkit-scrollbar{display:none}
-  nav button{
-    flex:0 0 auto !important;
-    height:36px !important;
-    min-height:36px !important;
-    max-height:36px !important;
-    line-height:36px !important;
-    padding:0 15px !important;
-    font-size:13px !important;
-    font-weight:600 !important;
-    border-radius:18px !important;
+  .nav-toggle-btn{
     display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    white-space:nowrap !important;
-    box-sizing:border-box !important;
-    background:rgba(255,255,255,.12);
-    color:rgba(255,255,255,.9);
-    border:1px solid rgba(255,255,255,.18);
+    align-items:center;
+    justify-content:center;
+  }
+
+  /* Collapsible Menu on Mobile */
+  .side-menu{
+    display:none;
+    flex-direction:column;
+    gap:6px;
+    padding-top:12px;
+    margin-top:10px;
+    border-top:1px solid rgba(255,255,255,.14);
+    animation:slideDownMenu .2s ease-out forwards;
+  }
+  .side-menu.open{
+    display:flex !important;
+  }
+  @keyframes slideDownMenu{
+    from{opacity:0;transform:translateY(-8px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+
+  nav{
+    display:flex !important;
+    flex-direction:column !important;
+    gap:6px !important;
+    padding:0 !important;
+    margin:0 !important;
+    flex:none !important;
+  }
+  nav button{
+    width:100% !important;
+    height:42px !important;
+    min-height:42px !important;
+    padding:0 16px !important;
+    font-size:14px !important;
+    border-radius:12px !important;
+    justify-content:flex-start !important;
+    background:rgba(255,255,255,.08) !important;
+    color:rgba(255,255,255,.9) !important;
+    border:1px solid rgba(255,255,255,.12) !important;
     transform:none !important;
   }
   nav button:hover{
-    background:rgba(255,255,255,.2);
-    color:#ffffff;
+    background:rgba(255,255,255,.16) !important;
+    color:#ffffff !important;
   }
   nav button.on{
     background:#ffffff !important;
@@ -468,70 +479,11 @@ dialog form{display:grid;gap:14px}
     font-weight:700 !important;
     border-color:#ffffff !important;
     box-shadow:0 4px 14px rgba(0,0,0,.25) !important;
-    height:36px !important;
-    min-height:36px !important;
-    max-height:36px !important;
-    transform:none !important;
   }
-  /* User Profile & Log Out Bar: Always Visible on Mobile */
+
+  /* Hide user profile & logout strip from the sidebar on mobile */
   .me{
-    display:flex !important;
-    flex-direction:row !important;
-    align-items:center !important;
-    justify-content:space-between !important;
-    padding-top:8px !important;
-    border-top:1px solid rgba(255,255,255,.14) !important;
-    gap:8px !important;
-    margin-top:2px !important;
-  }
-  .user-profile-bar{
-    display:flex !important;
-    align-items:center !important;
-    gap:10px !important;
-    margin-bottom:0 !important;
-    min-width:0 !important;
-    flex:1 !important;
-  }
-  .avatar-box{
-    width:34px !important;
-    height:34px !important;
-    flex-shrink:0 !important;
-  }
-  .user-details{
-    display:grid !important;
-    gap:2px !important;
-    min-width:0 !important;
-  }
-  .user-details #who{
-    font-size:13px !important;
-    font-weight:700 !important;
-    max-width:150px !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-    white-space:nowrap !important;
-  }
-  .user-details .role-badge{
-    font-size:10px !important;
-    padding:1px 6px !important;
-    border-radius:6px !important;
-  }
-  #logout{
-    width:auto !important;
-    flex-shrink:0 !important;
-    padding:7px 14px !important;
-    font-size:12px !important;
-    font-weight:700 !important;
-    border-radius:10px !important;
-    background:rgba(239,68,68,.18) !important;
-    color:#fca5a5 !important;
-    border:1px solid rgba(239,68,68,.4) !important;
-    box-shadow:none !important;
-    cursor:pointer !important;
-    transition:all .18s !important;
-  }
-  #logout:hover,#logout:active{
-    background:#ef4444 !important;
-    color:#ffffff !important;
+    display:none !important;
   }
 
   /* Content area */

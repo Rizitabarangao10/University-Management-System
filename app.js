@@ -209,31 +209,41 @@ async function enter(u){await loadCfg();const{data:p}=await db.from('profiles').
  startRealtime();
  const v=VIEWS[p.role]||VIEWS.student;$('#nav').innerHTML=Object.entries(v).map(([k,x])=>`<button data-go="${k}">${x[0]}</button>`).join('');go(Object.keys(v)[0])}
 
-$('#logout').onclick=async()=>{
+async function doLogout(){
   stopRealtime();
   await db.auth.signOut();
   me=null;
   $('#app').hidden=true;
   $('#login').hidden=false;
   $('#err').hidden=true;
-  const meBox=$('.me');if(meBox)meBox.classList.remove('open');
-};
+  const sm=$('#sideMenu');if(sm)sm.classList.remove('open');
+  const tb=$('#navToggleBtn');if(tb)tb.classList.remove('active');
+}
+
+$('#logout').onclick=doLogout;
 
 async function go(k){cur=k;document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.go===k));$('#main').innerHTML=await (VIEWS[me.role]||VIEWS.student)[k][1]()}
 
 document.addEventListener('click',e=>{
-  const mBtn=e.target.closest('#mobileMenuBtn');
-  if(mBtn){
-    const meBox=$('.me');
-    if(meBox)meBox.classList.toggle('open');
+  const tBtn=e.target.closest('#navToggleBtn');
+  if(tBtn){
+    const sm=$('#sideMenu');
+    if(sm){
+      sm.classList.toggle('open');
+      tBtn.classList.toggle('active',sm.classList.contains('open'));
+    }
+    return;
+  }
+  if(e.target.closest('#profLogoutBtn')){
+    doLogout();
     return;
   }
   const b=e.target.closest('[data-act]'),n=e.target.closest('[data-go]');
   if(b)A[b.dataset.act](b.dataset.id);
   if(n){
     go(n.dataset.go);
-    const meBox=$('.me');
-    if(meBox&&window.innerWidth<=800)meBox.classList.remove('open');
+    const sm=$('#sideMenu');if(sm)sm.classList.remove('open');
+    const tb=$('#navToggleBtn');if(tb)tb.classList.remove('active');
   }
   if(e.target.closest('#sidebarAvatarBtn')||e.target.closest('#btnUploadPng')){
     const fi=$('#avatarFileInput');if(fi){fi.value='';fi.click()}
@@ -378,6 +388,9 @@ const vProfile=async()=>{
       <div><small>Full Name</small><br><b>${esc(me.full_name)}</b></div>
       <div><small>Email</small><br><b>${esc(me.email)}</b></div>
       <div><small>Role</small><br><span class="role-badge ${me.role}">${roleLabels[me.role]||me.role}</span></div>
+    </div>
+    <div class="profile-logout-sec">
+      <button type="button" class="btn danger wide" id="profLogoutBtn">Log out</button>
     </div>
   </div>`;
 };
