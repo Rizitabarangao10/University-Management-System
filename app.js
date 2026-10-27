@@ -216,11 +216,17 @@ async function enter(u) {
   const rb = $('#role'); rb.textContent = roleLabels[p.role] || p.role; rb.className = 'role-badge ' + p.role;
   updateAvatarUI();
   startRealtime();
-  const v = VIEWS[p.role] || VIEWS.student; $('#nav').innerHTML = Object.entries(v).map(([k, x]) => `<button data-go="${k}">${x[0]}</button>`).join(''); go(Object.keys(v)[0])
+  const v = VIEWS[p.role] || VIEWS.student; $('#nav').innerHTML = Object.entries(v).map(([k, x]) => `<button data-go="${k}">${x[0]}</button>`).join('');
+  // Restore the last opened tab after a page refresh (fallback to the role's first tab)
+  let saved = null; try { saved = localStorage.getItem(TAB_KEY + p.id) } catch (_) { }
+  go(saved && v[saved] ? saved : Object.keys(v)[0])
 }
+
+const TAB_KEY = 'ums_tab_';
 
 async function doLogout() {
   stopRealtime();
+  try { if (me) localStorage.removeItem(TAB_KEY + me.id) } catch (_) { }
   me = null;
   cur = null;
   const sm = $('#sideMenu'); if (sm) sm.classList.remove('open');
@@ -239,10 +245,15 @@ $('#logout').onclick = doLogout;
 
 async function go(k) {
   if (!me) return;
+  const views = VIEWS[me.role] || VIEWS.student;
+  if (!views[k]) k = Object.keys(views)[0];
+  const changed = cur !== k;
   cur = k;
+  try { localStorage.setItem(TAB_KEY + me.id, k) } catch (_) { }
   document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.go === k));
-  $('#main').innerHTML = await (VIEWS[me.role] || VIEWS.student)[k][1]();
-  window.scrollTo(0, 0);
+  $('#main').innerHTML = await views[k][1]();
+  // Only jump to top when switching tabs, not when the same tab re-renders (e.g. realtime updates)
+  if (changed) window.scrollTo(0, 0);
 }
 
 function closeMobileMenu() {
