@@ -237,9 +237,60 @@ async function doLogout() {
 
 $('#logout').onclick = doLogout;
 
-async function go(k) { if (!me) return; cur = k; document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.go === k)); $('#main').innerHTML = await (VIEWS[me.role] || VIEWS.student)[k][1]() }
+async function go(k) {
+  if (!me) return;
+  cur = k;
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.go === k));
+  $('#main').innerHTML = await (VIEWS[me.role] || VIEWS.student)[k][1]();
+  window.scrollTo(0, 0);
+}
+
+function closeMobileMenu() {
+  const sm = $('#sideMenu');
+  if (sm && sm.classList.contains('open')) {
+    sm.classList.remove('open');
+    const tb = $('#navToggleBtn');
+    if (tb) tb.classList.remove('active');
+  }
+}
+
+// Auto-close mobile menu on scroll
+window.addEventListener('scroll', () => {
+  closeMobileMenu();
+}, { passive: true });
+
+// Prevent scroll gestures on touchscreen from triggering accidental button clicks
+let touchStartX = 0, touchStartY = 0, isTouchScrolling = false;
+
+document.addEventListener('touchstart', e => {
+  if (e.touches && e.touches[0]) {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    isTouchScrolling = false;
+  }
+}, { passive: true });
+
+document.addEventListener('touchmove', e => {
+  if (e.touches && e.touches[0]) {
+    const dx = Math.abs(e.touches[0].clientX - touchStartX);
+    const dy = Math.abs(e.touches[0].clientY - touchStartY);
+    if (dx > 8 || dy > 8) {
+      isTouchScrolling = true;
+    }
+  }
+}, { passive: true });
+
+document.addEventListener('touchend', () => {
+  // Clear the scroll flag shortly after gesture finishes
+  setTimeout(() => { isTouchScrolling = false; }, 200);
+}, { passive: true });
 
 document.addEventListener('click', e => {
+  if (isTouchScrolling) {
+    isTouchScrolling = false;
+    return;
+  }
+
   const tBtn = e.target.closest('#navToggleBtn');
   if (tBtn) {
     const sm = $('#sideMenu');
@@ -249,6 +300,12 @@ document.addEventListener('click', e => {
     }
     return;
   }
+
+  // Click outside sidebar closes the mobile navigation menu
+  if (!e.target.closest('.side')) {
+    closeMobileMenu();
+  }
+
   if (e.target.closest('#profLogoutBtn')) {
     doLogout();
     return;
@@ -257,8 +314,7 @@ document.addEventListener('click', e => {
   if (b) A[b.dataset.act](b.dataset.id);
   if (n) {
     go(n.dataset.go);
-    const sm = $('#sideMenu'); if (sm) sm.classList.remove('open');
-    const tb = $('#navToggleBtn'); if (tb) tb.classList.remove('active');
+    closeMobileMenu();
   }
   if (e.target.closest('#sidebarAvatarBtn') || e.target.closest('#btnUploadPng')) {
     const fi = $('#avatarFileInput'); if (fi) { fi.value = ''; fi.click() }

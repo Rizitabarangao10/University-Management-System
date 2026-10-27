@@ -80,6 +80,7 @@ input:focus,select:focus,button:focus-visible{
   cursor:pointer;
   transition:all .18s;
   box-shadow:0 4px 12px rgba(26,50,117,.25);
+  touch-action:manipulation;
 }
 .btn:hover{
   background:var(--blue-hover);
@@ -170,6 +171,7 @@ nav button{
   font:600 14px Manrope;
   cursor:pointer;
   transition:all .2s;
+  touch-action:manipulation;
 }
 nav button:hover{background:rgba(255,255,255,.12);color:#ffffff;transform:translateX(2px)}
 nav button.on{
