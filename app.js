@@ -24,13 +24,19 @@ const pass=()=>+cfg.pass_score||75;
 // ---- Auth flow: login -> validate -> role -> dashboard -> logout
 const fail=m=>{
   const e=$('#err');
-  if(m&&m.includes('Signups not allowed')){
+  let msg = typeof m === 'object' ? (m?.message || JSON.stringify(m)) : String(m || '');
+  if(!msg || msg === '{}' || msg === 'null' || msg === 'undefined'){
+    msg = 'Hindi maipadala ang email. Kung naka-ON ang Custom SMTP sa Supabase pero walang laman, i-OFF muna ito sa Dashboard > Emails > SMTP Settings.';
+  }
+  if(msg.includes('Signups not allowed')){
     e.innerHTML='<b>Signups not allowed:</b> Naka-off ang public signups sa iyong Supabase project.<br><small style="font-weight:normal;display:block;margin-top:4px">Pumunta sa <b>Supabase Dashboard &gt; Authentication &gt; Providers &gt; Email</b> at i-ON ang <b>"Allow new users to sign up"</b> (Enable Signups).</small>';
+  }else if(msg.toLowerCase().includes('rate limit')){
+    e.textContent='Masyadong maraming email request. Maghintay muna ng 60 segundo bago sumubok ulit.';
   }else{
-    e.textContent=m;
+    e.textContent=msg;
   }
   e.hidden=false;$('#ok').hidden=true;
-  const p=$('[name=password]');p.value='';p.focus();
+  const p=$('[name=password]');if(p){p.value='';p.focus();}
 };
 async function loadCfg(){cfg=Object.fromEntries((await rows('settings')).map(s=>[s.key,s.value]));const n=(cfg.university_name&&cfg.university_name!=='My University')?cfg.university_name:'National University';$('#uni').textContent=n;$('#uniS').textContent=n}
 const good=m=>{const o=$('#ok');o.textContent=m;o.hidden=false;$('#err').hidden=true};
@@ -47,11 +53,12 @@ function setMode(m){const f=$('#loginForm');f.dataset.mode=m;
 $('#loginForm').onsubmit=async e=>{e.preventDefault();const m=e.target.dataset.mode,f=Object.fromEntries(new FormData(e.target));
   if(m==='forgot'){
     const{error}=await db.auth.resetPasswordForEmail(f.email.trim());
-    if(error)return fail(error.message);
+    if(error)return fail(error.message||error);
     setMode('reset');return good('We sent a verification code to '+f.email.trim()+'. Enter it below with your new password.')}
   if(m==='reset'){
-    if(!otpOk){const{error:oe}=await db.auth.verifyOtp({email:f.email.trim(),token:f.code.trim(),type:'recovery'});if(oe)return fail('Invalid or expired code. Check the code in your email or tap Resend code.');otpOk=true}const{error}=await db.auth.updateUser({password:f.password});
-    if(error)return fail(error.message);
+    const token=(f.code||'').replace(/\s+/g,'').trim();
+    if(!otpOk){const{error:oe}=await db.auth.verifyOtp({email:f.email.trim(),token,type:'recovery'});if(oe)return fail(oe.message||'Invalid or expired code. Check the code in your email or tap Resend code.');otpOk=true}const{error}=await db.auth.updateUser({password:f.password});
+    if(error)return fail(error.message||error);
     otpOk=false;await db.auth.signOut();
     setMode('in');return good('Password updated! Please sign in with your new password.')}
   const up=m==='up';
@@ -62,7 +69,7 @@ $('#loginForm').onsubmit=async e=>{e.preventDefault();const m=e.target.dataset.m
  if(up&&data.user){try{await db.from('profiles').update({role,full_name:f.full_name}).eq('id',data.user.id)}catch(_){}}
  enter(data.user)};
 $('#toggle').onclick=()=>setMode($('#loginForm').dataset.mode==='in'?'up':'in');
-$('#forgot').onclick=async()=>{if($('#loginForm').dataset.mode==='in')return setMode('forgot');const{error}=await db.auth.resetPasswordForEmail($('[name=email]').value.trim());error?fail(error.message):good('A new code has been sent to your email.')};
+$('#forgot').onclick=async()=>{if($('#loginForm').dataset.mode==='in')return setMode('forgot');const{error}=await db.auth.resetPasswordForEmail($('[name=email]').value.trim());error?fail(error.message||error):good('A new code has been sent to your email.')};
 async function enter(u){await loadCfg();const{data:p}=await db.from('profiles').select('*').eq('id',u.id).maybeSingle();
  if(!p){await db.auth.signOut();return fail('No active profile for this account. Contact an administrator.')}
  p.role=(p.role||'student').toLowerCase().trim();
