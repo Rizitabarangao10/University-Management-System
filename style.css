@@ -390,19 +390,20 @@ dialog form{display:grid;gap:14px}
 @media(max-width:800px){
   #app{
     grid-template-columns:1fr;
-    padding:10px 12px;
-    gap:14px;
+    padding:8px 10px;
+    gap:12px;
     min-height:100vh;
   }
   .side{
     position:sticky;
-    top:8px;
+    top:6px;
     z-index:90;
     height:auto;
-    padding:12px 14px;
+    min-height:unset;
+    padding:10px 14px;
     border-radius:18px;
-    gap:10px;
-    box-shadow:0 10px 25px rgba(0,0,0,.35);
+    gap:8px;
+    box-shadow:0 8px 24px rgba(0,0,0,.35);
   }
   .brand{
     padding-bottom:0;
@@ -410,51 +411,127 @@ dialog form{display:grid;gap:14px}
     gap:10px;
   }
   .side-logo{
-    height:36px;
+    height:34px;
   }
   .brand-text b{
-    font-size:20px;
+    font-size:19px;
   }
   .brand-text span{
     font-size:10px;
   }
   .mobile-menu-btn{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
+    display:none !important;
   }
-  /* Mobile Swipeable Nav Bar */
+  /* Mobile Swipeable Nav Bar with Crisp Fixed-Height Pills */
   nav{
-    display:flex;
-    flex-direction:row;
-    overflow-x:auto;
-    overflow-y:hidden;
-    white-space:nowrap;
-    gap:8px;
-    padding:2px 0 4px;
-    -webkit-overflow-scrolling:touch;
-    scrollbar-width:none;
+    flex:none !important;
+    display:flex !important;
+    flex-direction:row !important;
+    align-items:center !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    white-space:nowrap !important;
+    gap:8px !important;
+    padding:4px 0 !important;
+    margin:0 !important;
+    -webkit-overflow-scrolling:touch !important;
+    scrollbar-width:none !important;
   }
   nav::-webkit-scrollbar{display:none}
   nav button{
-    flex-shrink:0;
-    padding:9px 15px;
-    font-size:13px;
-    border-radius:12px;
+    flex:0 0 auto !important;
+    height:36px !important;
+    min-height:36px !important;
+    max-height:36px !important;
+    line-height:36px !important;
+    padding:0 15px !important;
+    font-size:13px !important;
+    font-weight:600 !important;
+    border-radius:18px !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    white-space:nowrap !important;
+    box-sizing:border-box !important;
+    background:rgba(255,255,255,.12);
+    color:rgba(255,255,255,.9);
+    border:1px solid rgba(255,255,255,.18);
+    transform:none !important;
   }
-  /* Collapsible Profile / Logout Bar on Mobile */
+  nav button:hover{
+    background:rgba(255,255,255,.2);
+    color:#ffffff;
+  }
+  nav button.on{
+    background:#ffffff !important;
+    color:var(--blue-dark) !important;
+    font-weight:700 !important;
+    border-color:#ffffff !important;
+    box-shadow:0 4px 14px rgba(0,0,0,.25) !important;
+    height:36px !important;
+    min-height:36px !important;
+    max-height:36px !important;
+    transform:none !important;
+  }
+  /* User Profile & Log Out Bar: Always Visible on Mobile */
   .me{
-    display:none;
-    padding-top:12px;
-    border-top:1px solid rgba(255,255,255,.15);
+    display:flex !important;
+    flex-direction:row !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    padding-top:8px !important;
+    border-top:1px solid rgba(255,255,255,.14) !important;
+    gap:8px !important;
+    margin-top:2px !important;
   }
-  .me.open{
-    display:grid;
-    animation:fadeSlideDown .25s ease-out;
+  .user-profile-bar{
+    display:flex !important;
+    align-items:center !important;
+    gap:10px !important;
+    margin-bottom:0 !important;
+    min-width:0 !important;
+    flex:1 !important;
   }
-  @keyframes fadeSlideDown{
-    from{opacity:0;transform:translateY(-8px)}
-    to{opacity:1;transform:translateY(0)}
+  .avatar-box{
+    width:34px !important;
+    height:34px !important;
+    flex-shrink:0 !important;
+  }
+  .user-details{
+    display:grid !important;
+    gap:2px !important;
+    min-width:0 !important;
+  }
+  .user-details #who{
+    font-size:13px !important;
+    font-weight:700 !important;
+    max-width:150px !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    white-space:nowrap !important;
+  }
+  .user-details .role-badge{
+    font-size:10px !important;
+    padding:1px 6px !important;
+    border-radius:6px !important;
+  }
+  #logout{
+    width:auto !important;
+    flex-shrink:0 !important;
+    padding:7px 14px !important;
+    font-size:12px !important;
+    font-weight:700 !important;
+    border-radius:10px !important;
+    background:rgba(239,68,68,.18) !important;
+    color:#fca5a5 !important;
+    border:1px solid rgba(239,68,68,.4) !important;
+    box-shadow:none !important;
+    cursor:pointer !important;
+    transition:all .18s !important;
+  }
+  #logout:hover,#logout:active{
+    background:#ef4444 !important;
+    color:#ffffff !important;
   }
 
   /* Content area */
