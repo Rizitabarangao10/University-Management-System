@@ -105,4 +105,15 @@ create policy s_admin on settings for all to authenticated using(my_role()='admi
 -- end; $$;
 -- drop trigger if exists on_signup on auth.users;
 -- create trigger on_signup after insert on auth.users for each row execute function handle_new_user();
+--
+-- =========================================================================
+-- ENABLE SUPABASE REALTIME (Run in SQL Editor to activate live updates):
+-- =========================================================================
+-- alter publication supabase_realtime add table public.grades;
+-- alter publication supabase_realtime add table public.classes;
+-- alter publication supabase_realtime add table public.enrollments;
+-- alter publication supabase_realtime add table public.announcements;
+-- alter publication supabase_realtime add table public.profiles;
+-- alter publication supabase_realtime add table public.settings;
+
 

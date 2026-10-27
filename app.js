@@ -16,11 +16,11 @@ async function handlePngUpload(file){
   if(!file)return;
   const isPng=(file.type==='image/png')||file.name.toLowerCase().endsWith('.png');
   if(!isPng){
-    toast('Error: PNG (.png) type lang po ang pwede i-upload!',1);
+    toast('Error: Only PNG (.png) files are supported.',1);
     const fi=$('#avatarFileInput');if(fi)fi.value='';
     return;
   }
-  if(file.size>5*1024*1024){toast('Masyadong malaki ang image (max 5MB).',1);return}
+  if(file.size>5*1024*1024){toast('Image file is too large (maximum 5MB allowed).',1);return}
   const reader=new FileReader();
   reader.onload=ev=>{
     const img=new Image();
@@ -35,7 +35,7 @@ async function handlePngUpload(file){
       try{localStorage.setItem('avatar_'+me.id,pngData)}catch(_){}
       updateAvatarUI();
       try{await db.from('profiles').update({avatar_url:pngData}).eq('id',me.id)}catch(e){console.warn('Avatar db update:',e)}
-      toast('Profile picture updated!');
+      toast('Profile picture updated successfully!');
       if(cur==='profile'||cur==='users')go(cur);
     };
     img.src=ev.target.result;
@@ -44,12 +44,12 @@ async function handlePngUpload(file){
 }
 
 async function removeAvatar(){
-  if(!confirm('Alisin ang profile picture?'))return;
+  if(!confirm('Are you sure you want to remove your profile picture?'))return;
   me.avatar_url=null;
   try{localStorage.removeItem('avatar_'+me.id)}catch(_){}
   updateAvatarUI();
   try{await db.from('profiles').update({avatar_url:null}).eq('id',me.id)}catch(_){}
-  toast('Profile picture removed');
+  toast('Profile picture removed.');
   if(cur==='profile')go(cur);
 }
 
@@ -64,7 +64,7 @@ function form(title,f,v,save){const d=$('#dlg');
  d.innerHTML=`<form><h3>${title}</h3>${f.map(x=>`<label>${x.l}${x.o?`<select name="${x.n}">${opts(x.o,v[x.n])}</select>`:`<input name="${x.n}" type="${x.t||'text'}" value="${esc(v[x.n])}" ${x.r?'required':''}>`}</label>`).join('')}<div class="row"><button type="button" class="btn ghost" id="x">Cancel</button><button class="btn">Save</button></div></form>`;
  $('#x').onclick=()=>d.close();
  d.querySelector('form').onsubmit=async e=>{e.preventDefault();const o=Object.fromEntries(new FormData(e.target));for(const k in o)if(o[k]==='')o[k]=null;d.close();await save(o);go(cur)};d.showModal()}
-const del=(t,k='id')=>async id=>{if(confirm('Delete this item?')){await q(db.from(t).delete().eq(k,id));go(cur)}};
+const del=(t,k='id')=>async id=>{if(confirm('Are you sure you want to delete this item?')){await q(db.from(t).delete().eq(k,id));go(cur)}};
 const pass=()=>+cfg.pass_score||75;
 
 // ---- Auth flow: login -> validate -> role -> dashboard -> logout
@@ -72,12 +72,12 @@ const fail=m=>{
   const e=$('#err');
   let msg = typeof m === 'object' ? (m?.message || JSON.stringify(m)) : String(m || '');
   if(!msg || msg === '{}' || msg === 'null' || msg === 'undefined'){
-    msg = 'Hindi maipadala ang email. Kung naka-ON ang Custom SMTP sa Supabase pero walang laman, i-OFF muna ito sa Dashboard > Emails > SMTP Settings.';
+    msg = 'Unable to send email. If Custom SMTP is enabled in Supabase without full configuration, please turn it OFF in your Supabase Dashboard > Project Settings > Auth > SMTP Settings.';
   }
   if(msg.includes('Signups not allowed')){
-    e.innerHTML='<b>Signups not allowed:</b> Naka-off ang public signups sa iyong Supabase project.<br><small style="font-weight:normal;display:block;margin-top:4px">Pumunta sa <b>Supabase Dashboard &gt; Authentication &gt; Providers &gt; Email</b> at i-ON ang <b>"Allow new users to sign up"</b> (Enable Signups).</small>';
+    e.innerHTML='<b>Signups not allowed:</b> Public user registration is currently disabled in your Supabase project.<br><small style="font-weight:normal;display:block;margin-top:4px">Go to <b>Supabase Dashboard &gt; Authentication &gt; Providers &gt; Email</b> and enable <b>"Allow new users to sign up"</b>.</small>';
   }else if(msg.toLowerCase().includes('rate limit')){
-    e.textContent='Masyadong maraming email request. Maghintay muna ng 60 segundo bago sumubok ulit.';
+    e.textContent='Too many email requests. Please wait 60 seconds before trying again.';
   }else{
     e.textContent=msg;
   }
@@ -105,7 +105,7 @@ $('#loginForm').onsubmit=async e=>{e.preventDefault();const m=e.target.dataset.m
     if(!recovering&&!otpOk){
       const token=(f.code||'').replace(/\s+/g,'').trim();
       const{error:oe}=await db.auth.verifyOtp({email:(f.email||$('[name=email]').value).trim(),token,type:'recovery'});
-      if(oe)return fail(oe.message||'Invalid or expired code. Check the code in your email or tap Resend code.');
+      if(oe)return fail(oe.message||'Invalid or expired verification code. Please check your email or tap Resend code.');
       otpOk=true;
     }
     const{error}=await db.auth.updateUser({password:f.password});
@@ -120,7 +120,85 @@ $('#loginForm').onsubmit=async e=>{e.preventDefault();const m=e.target.dataset.m
  if(up&&data.user){try{await db.from('profiles').update({role,full_name:f.full_name}).eq('id',data.user.id)}catch(_){}}
  enter(data.user)};
 $('#toggle').onclick=()=>setMode($('#loginForm').dataset.mode==='in'?'up':'in');
-$('#forgot').onclick=async()=>{if($('#loginForm').dataset.mode==='in')return setMode('forgot');const{error}=await db.auth.resetPasswordForEmail($('[name=email]').value.trim());error?fail(error.message||error):good('A new code has been sent to your email.')};
+$('#forgot').onclick=async()=>{if($('#loginForm').dataset.mode==='in')return setMode('forgot');const{error}=await db.auth.resetPasswordForEmail($('[name=email]').value.trim());error?fail(error.message||error):good('A new verification code has been sent to your email.')};
+
+// ---- Realtime Synchronization
+let realtimeChan=null;
+function stopRealtime(){
+  if(realtimeChan){
+    try{db.removeChannel(realtimeChan)}catch(_){}
+    realtimeChan=null;
+  }
+  const dot=$('#liveDot');if(dot)dot.className='live-dot';
+}
+
+function startRealtime(){
+  stopRealtime();
+  try{
+    realtimeChan=db.channel('ums-realtime-channel')
+      .on('postgres_changes',{event:'*',schema:'public',table:'grades'},p=>handleRealtimeEvent('grades',p))
+      .on('postgres_changes',{event:'*',schema:'public',table:'classes'},p=>handleRealtimeEvent('classes',p))
+      .on('postgres_changes',{event:'*',schema:'public',table:'enrollments'},p=>handleRealtimeEvent('enrollments',p))
+      .on('postgres_changes',{event:'*',schema:'public',table:'announcements'},p=>handleRealtimeEvent('announcements',p))
+      .on('postgres_changes',{event:'*',schema:'public',table:'profiles'},p=>handleRealtimeEvent('profiles',p))
+      .on('postgres_changes',{event:'*',schema:'public',table:'settings'},p=>handleRealtimeEvent('settings',p))
+      .subscribe(status=>{
+        const dot=$('#liveDot');
+        if(dot){
+          dot.className='live-dot '+(status==='SUBSCRIBED'?'active':'connecting');
+          dot.title=status==='SUBSCRIBED'?'Realtime sync active':'Connecting realtime...';
+        }
+      });
+  }catch(e){console.warn('Realtime init:',e)}
+}
+
+function handleRealtimeEvent(t,payload){
+  if(t==='announcements'){
+    if(payload.eventType==='INSERT')toast('New announcement: '+(payload.new?.title||'Notice'));
+    if(cur==='announcements')go(cur);
+    return;
+  }
+  if(t==='grades'){
+    if(me?.role==='student'){
+      if(payload.new?.student_id===me.id||payload.old?.student_id===me.id){
+        toast('Your grades have been updated!');
+        if(cur==='grades')go(cur);
+      }
+      return;
+    }
+    if(cur==='reports'||cur==='students'){go(cur);return}
+    if(cur==='grades'){
+      const active=document.activeElement;
+      if(active&&(active.tagName==='INPUT'||active.tagName==='SELECT'))return;
+      go(cur);
+    }
+    return;
+  }
+  if(t==='classes'){
+    if(cur==='classes'||cur==='grades'||cur==='reports'||cur==='schedule')go(cur);
+    return;
+  }
+  if(t==='enrollments'){
+    if(cur==='classes'||cur==='grades'||cur==='students'||cur==='schedule')go(cur);
+    return;
+  }
+  if(t==='profiles'){
+    if(payload.new?.id===me?.id){
+      me={...me,...payload.new};
+      $('#who').textContent=me.full_name||me.email;
+      const rb=$('#role');if(rb){rb.textContent=roleLabels[me.role]||me.role;rb.className='role-badge '+me.role}
+      updateAvatarUI();
+    }
+    if(cur==='users')go(cur);
+    return;
+  }
+  if(t==='settings'){
+    loadCfg();
+    if(cur==='settings'||cur==='reports')go(cur);
+    return;
+  }
+}
+
 async function enter(u){await loadCfg();const{data:p}=await db.from('profiles').select('*').eq('id',u.id).maybeSingle();
  if(!p){await db.auth.signOut();return fail('No active profile for this account. Contact an administrator.')}
  p.role=(p.role||'student').toLowerCase().trim();
@@ -128,14 +206,35 @@ async function enter(u){await loadCfg();const{data:p}=await db.from('profiles').
  me=p;$('#login').hidden=true;$('#app').hidden=false;$('#who').textContent=p.full_name||p.email;
  const rb=$('#role');rb.textContent=roleLabels[p.role]||p.role;rb.className='role-badge '+p.role;
  updateAvatarUI();
+ startRealtime();
  const v=VIEWS[p.role]||VIEWS.student;$('#nav').innerHTML=Object.entries(v).map(([k,x])=>`<button data-go="${k}">${x[0]}</button>`).join('');go(Object.keys(v)[0])}
-$('#logout').onclick=async()=>{await db.auth.signOut();me=null;$('#app').hidden=true;$('#login').hidden=false;$('#err').hidden=true};
+
+$('#logout').onclick=async()=>{
+  stopRealtime();
+  await db.auth.signOut();
+  me=null;
+  $('#app').hidden=true;
+  $('#login').hidden=false;
+  $('#err').hidden=true;
+  const meBox=$('.me');if(meBox)meBox.classList.remove('open');
+};
+
 async function go(k){cur=k;document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.go===k));$('#main').innerHTML=await (VIEWS[me.role]||VIEWS.student)[k][1]()}
 
 document.addEventListener('click',e=>{
+  const mBtn=e.target.closest('#mobileMenuBtn');
+  if(mBtn){
+    const meBox=$('.me');
+    if(meBox)meBox.classList.toggle('open');
+    return;
+  }
   const b=e.target.closest('[data-act]'),n=e.target.closest('[data-go]');
   if(b)A[b.dataset.act](b.dataset.id);
-  if(n)go(n.dataset.go);
+  if(n){
+    go(n.dataset.go);
+    const meBox=$('.me');
+    if(meBox&&window.innerWidth<=800)meBox.classList.remove('open');
+  }
   if(e.target.closest('#sidebarAvatarBtn')||e.target.closest('#btnUploadPng')){
     const fi=$('#avatarFileInput');if(fi){fi.value='';fi.click()}
   }
@@ -158,10 +257,10 @@ document.addEventListener('input',e=>{
         r.value='';
         r.className='remarks-input';
       }else if(n>=75){
-        r.value='Pasado';
+        r.value='Passed';
         r.className='remarks-input passed';
       }else{
-        r.value='Bagsak';
+        r.value='Failed';
         r.className='remarks-input failed';
       }
     }
@@ -176,7 +275,7 @@ if(avatarInputEl){
 }
 
 document.addEventListener('change',async e=>{const t=e.target;if(t.id==='gc'){gc=t.value;go(cur)}
- if(t.dataset.role){await q(db.from('profiles').update({role:t.value.toLowerCase().trim()}).eq('id',t.dataset.role));toast('Role updated')}});
+ if(t.dataset.role){await q(db.from('profiles').update({role:t.value.toLowerCase().trim()}).eq('id',t.dataset.role));toast('Role updated successfully.')}});
 
 // ---- Views
 async function vUsers(){const p=await rows('profiles','*',x=>x.order('full_name'));
@@ -219,9 +318,11 @@ async function vGrades(){const cl=await rows('classes','id,name',x=>x.eq('teache
    ['Remarks',r=>{
      const gr=f(r)?.score;
      let rem=f(r)?.remarks;
-     if(!rem&&gr!=null){rem=+gr>=75?'Pasado':'Bagsak'}
-     const cls=rem==='Pasado'?'passed':rem==='Bagsak'?'failed':'';
-     return `<input id="r${r.student.id}" class="remarks-input ${cls}" value="${esc(rem)}" placeholder="Pasado / Bagsak">`;
+     if(!rem&&gr!=null){rem=+gr>=75?'Passed':'Failed'}
+     if(rem==='Pasado')rem='Passed';
+     if(rem==='Bagsak')rem='Failed';
+     const cls=rem==='Passed'?'passed':rem==='Failed'?'failed':'';
+     return `<input id="r${r.student.id}" class="remarks-input ${cls}" value="${esc(rem)}" placeholder="Passed / Failed">`;
    }],
    ['',r=>btn('saveG',r.student.id,'Save')]
  ],en)}
@@ -235,8 +336,10 @@ async function vStudents(){const e=await rows('enrollments','class_id,student_id
    ['Remarks',r=>{
      const found=g.find(x=>x.class_id==r.class_id&&x.student_id==r.student_id);
      if(!found||found.score==null)return '<span class="badge-status pending">-</span>';
-     const rem=found.remarks||(+found.score>=75?'Pasado':'Bagsak');
-     const cls=rem==='Pasado'?'passed':'failed';
+     let rem=found.remarks||(+found.score>=75?'Passed':'Failed');
+     if(rem==='Pasado')rem='Passed';
+     if(rem==='Bagsak')rem='Failed';
+     const cls=rem==='Passed'?'passed':'failed';
      return `<span class="badge-status ${cls}">${esc(rem)}</span>`;
    }]
  ],e)}
@@ -247,11 +350,13 @@ async function vMyGrades(){const g=await rows('grades','*,class:class_id(code,na
    ['Grade',r=>r.score??'-'],
    ['Remarks',r=>{
      if(r.score==null)return '-';
-     const rem=r.remarks||(+r.score>=75?'Pasado':'Bagsak');
-     const cls=rem==='Pasado'?'passed':'failed';
+     let rem=r.remarks||(+r.score>=75?'Passed':'Failed');
+     if(rem==='Pasado')rem='Passed';
+     if(rem==='Bagsak')rem='Failed';
+     const cls=rem==='Passed'?'passed':'failed';
      return `<span class="badge-status ${cls}">${esc(rem)}</span>`;
    }],
-   ['Status',r=>r.score==null?'<span class="badge-status pending">Pending</span>':(+r.score>=75?'<span class="badge-status passed">Pasado</span>':'<span class="badge-status failed">Bagsak</span>')]
+   ['Status',r=>r.score==null?'<span class="badge-status pending">Pending</span>':(+r.score>=75?'<span class="badge-status passed">Passed</span>':'<span class="badge-status failed">Failed</span>')]
  ],g)}
 
 async function vSchedule(){const e=await rows('enrollments','class:class_id(*)',x=>x.eq('student_id',me.id));
@@ -266,7 +371,7 @@ const vProfile=async()=>{
       <div class="avatar-actions">
         <button type="button" class="btn sm" id="btnUploadPng">Upload PNG picture</button>
         ${(me.avatar_url||localStorage.getItem('avatar_'+me.id))?`<button type="button" class="btn sm ghost" id="btnRemovePng">Remove picture</button>`:''}
-        <span class="hint-text">Tumatanggap lamang ng <b>.PNG</b> image file.</span>
+        <span class="hint-text">Only <b>.PNG</b> image files are accepted.</span>
       </div>
     </div>
     <div class="profile-details">
@@ -294,9 +399,11 @@ const A={filU:id=>{uFilter=id;go(cur)},addC:()=>saveC(),editC:saveC,delC:del('cl
  saveG:async sid=>{
    const s=$('#s'+sid).value.trim(),r=$('#r'+sid).value.trim();
    const scoreVal=s===''?null:+s;
-   const remVal=r||(scoreVal!=null?(scoreVal>=75?'Pasado':'Bagsak'):null);
+   let remVal=r||(scoreVal!=null?(scoreVal>=75?'Passed':'Failed'):null);
+   if(remVal==='Pasado')remVal='Passed';
+   if(remVal==='Bagsak')remVal='Failed';
    await q(db.from('grades').upsert({class_id:gc,student_id:sid,score:scoreVal,remarks:remVal},{onConflict:'class_id,student_id'}));
-   toast('Grade saved');
+   toast('Grade saved successfully.');
  },
  csv:()=>{const d=window.csv;if(!d.length)return toast('No data to export',1);const k=Object.keys(d[0]),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([[k,...d.map(r=>k.map(c=>`"${r[c]}"`))].join('\n')],{type:'text/csv'}));a.download='report.csv';a.click()}};
 

@@ -258,6 +258,62 @@ dialog form{display:grid;gap:14px}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 #toast.bad{background:#dc2626;border-color:#ef4444}
 
+/* Live Realtime Indicator */
+.live-status{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:rgba(255,255,255,.1);
+  padding:4px 9px;
+  border-radius:20px;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.4px;
+  color:#93c5fd;
+  border:1px solid rgba(255,255,255,.16);
+  margin-left:auto;
+}
+.live-dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#94a3b8;
+  display:inline-block;
+  transition:all .3s;
+}
+.live-dot.active{
+  background:#22c55e;
+  box-shadow:0 0 8px #22c55e;
+  animation:pulseLive 2s infinite;
+}
+.live-dot.connecting{
+  background:#f59e0b;
+}
+@keyframes pulseLive{
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:.5;transform:scale(1.25)}
+}
+.live-text{
+  text-transform:uppercase;
+  font-size:10px;
+}
+
+/* Mobile Menu Toggle Button */
+.mobile-menu-btn{
+  display:none;
+  background:none;
+  border:1px solid rgba(255,255,255,.2);
+  color:#ffffff;
+  padding:7px;
+  border-radius:10px;
+  cursor:pointer;
+  line-height:0;
+  transition:background .2s;
+}
+.mobile-menu-btn:hover{
+  background:rgba(255,255,255,.15);
+}
+
 /* User Profile Avatar in Sidebar */
 .user-profile-bar{display:flex;align-items:center;gap:12px;margin-bottom:6px}
 .avatar-box{
@@ -330,10 +386,192 @@ dialog form{display:grid;gap:14px}
 .hint-text{color:#64748b;font-size:11px}
 .profile-details{display:grid;gap:12px}
 
-
+/* Responsive Layout for Mobile Phone Users */
 @media(max-width:800px){
-  #app{grid-template-columns:1fr;padding:14px}
-  .side{position:static;height:auto}
-  nav{display:flex;flex-wrap:wrap}
+  #app{
+    grid-template-columns:1fr;
+    padding:10px 12px;
+    gap:14px;
+    min-height:100vh;
+  }
+  .side{
+    position:sticky;
+    top:8px;
+    z-index:90;
+    height:auto;
+    padding:12px 14px;
+    border-radius:18px;
+    gap:10px;
+    box-shadow:0 10px 25px rgba(0,0,0,.35);
+  }
+  .brand{
+    padding-bottom:0;
+    border-bottom:0;
+    gap:10px;
+  }
+  .side-logo{
+    height:36px;
+  }
+  .brand-text b{
+    font-size:20px;
+  }
+  .brand-text span{
+    font-size:10px;
+  }
+  .mobile-menu-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+  /* Mobile Swipeable Nav Bar */
+  nav{
+    display:flex;
+    flex-direction:row;
+    overflow-x:auto;
+    overflow-y:hidden;
+    white-space:nowrap;
+    gap:8px;
+    padding:2px 0 4px;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  nav::-webkit-scrollbar{display:none}
+  nav button{
+    flex-shrink:0;
+    padding:9px 15px;
+    font-size:13px;
+    border-radius:12px;
+  }
+  /* Collapsible Profile / Logout Bar on Mobile */
+  .me{
+    display:none;
+    padding-top:12px;
+    border-top:1px solid rgba(255,255,255,.15);
+  }
+  .me.open{
+    display:grid;
+    animation:fadeSlideDown .25s ease-out;
+  }
+  @keyframes fadeSlideDown{
+    from{opacity:0;transform:translateY(-8px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+
+  /* Content area */
+  #main{
+    padding:0;
+  }
+  .bar{
+    margin-bottom:12px;
+    gap:10px;
+    flex-direction:column;
+    align-items:flex-start;
+  }
+  .bar h2{
+    font-size:22px;
+  }
+  .bar select{
+    width:100%;
+    min-width:0;
+  }
+  .bar .btn{
+    width:100%;
+    text-align:center;
+  }
+
+  /* Tables on Mobile */
+  .tw{
+    border-radius:16px;
+    -webkit-overflow-scrolling:touch;
+    border:1px solid rgba(255,255,255,.2);
+  }
+  th,td{
+    padding:11px 12px;
+    font-size:13px;
+  }
+  .tbl-avatar{
+    width:28px;
+    height:28px;
+  }
+  /* Prevent iOS zoom on input focus by setting 16px font */
+  input,select,td input,td select{
+    font-size:16px;
+  }
+  .grade-input{
+    min-width:76px;
+    padding:8px 10px;
+  }
+  .remarks-input{
+    min-width:96px;
+    padding:8px 10px;
+  }
+
+  /* Dialogs and Modals */
+  dialog{
+    width:calc(100vw - 20px);
+    max-width:100%;
+    padding:20px 16px;
+    border-radius:18px;
+    max-height:86vh;
+    overflow-y:auto;
+  }
+  dialog h3{
+    font-size:18px;
+  }
+  .row{
+    flex-direction:column-reverse;
+    gap:8px;
+  }
+  .row .btn{
+    width:100%;
+  }
+
+  /* Login and Auth Card */
+  .center{
+    padding:12px;
+  }
+  .card{
+    padding:26px 18px;
+    border-radius:20px;
+    gap:12px;
+  }
+  .login-logo{
+    height:72px;
+  }
+  h1{
+    font-size:21px;
+  }
+
+  /* Profile Card on Mobile */
+  .profile-card{
+    max-width:100%;
+    padding:20px 16px;
+  }
+  .profile-avatar-sec{
+    flex-direction:column;
+    text-align:center;
+    gap:12px;
+  }
+  .avatar-actions{
+    width:100%;
+  }
+  .avatar-actions .btn{
+    width:100%;
+    margin-right:0;
+    margin-bottom:6px;
+  }
+}
+
+@media(max-width:480px){
+  .brand-text b{
+    font-size:18px;
+  }
+  .tabs{
+    gap:6px;
+  }
+  .tabs .btn{
+    font-size:12px;
+    padding:6px 10px;
+  }
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
