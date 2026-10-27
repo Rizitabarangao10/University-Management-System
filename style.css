@@ -391,21 +391,24 @@ dialog form{display:grid;gap:14px}
 /* Responsive Layout for Mobile Phone Users */
 @media(max-width:800px){
   #app{
-    grid-template-columns:1fr;
-    padding:8px 10px;
-    gap:12px;
-    min-height:100vh;
+    display:flex !important;
+    flex-direction:column !important;
+    padding:8px 10px !important;
+    gap:12px !important;
+    min-height:100vh !important;
   }
   .side{
-    position:sticky;
-    top:6px;
-    z-index:90;
-    height:auto;
-    min-height:unset;
-    padding:10px 14px;
-    border-radius:18px;
-    gap:0;
-    box-shadow:0 8px 24px rgba(0,0,0,.35);
+    position:sticky !important;
+    top:6px !important;
+    z-index:90 !important;
+    flex:none !important;
+    height:auto !important;
+    min-height:unset !important;
+    max-height:none !important;
+    padding:10px 14px !important;
+    border-radius:18px !important;
+    gap:0 !important;
+    box-shadow:0 8px 24px rgba(0,0,0,.35) !important;
   }
   .brand{
     display:flex;
