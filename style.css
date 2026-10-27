@@ -258,6 +258,79 @@ dialog form{display:grid;gap:14px}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 #toast.bad{background:#dc2626;border-color:#ef4444}
 
+/* User Profile Avatar in Sidebar */
+.user-profile-bar{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.avatar-box{
+  position:relative;
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  overflow:hidden;
+  cursor:pointer;
+  border:2px solid var(--gold);
+  background:rgba(255,255,255,.15);
+  flex-shrink:0;
+  transition:transform .2s,box-shadow .2s;
+}
+.avatar-box:hover{transform:scale(1.05);box-shadow:0 0 10px rgba(245,184,46,.5)}
+.user-avatar{width:100%;height:100%;object-fit:cover;display:block}
+.avatar-badge{
+  position:absolute;
+  bottom:0;
+  right:0;
+  background:rgba(12,26,64,.85);
+  font-size:10px;
+  padding:1px 3px;
+  border-radius:4px;
+  display:none;
+}
+.avatar-box:hover .avatar-badge{display:block}
+.user-details{display:grid;gap:3px;min-width:0}
+.user-details #who{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Table Avatar and User Cell */
+.user-cell{display:flex;align-items:center;gap:10px}
+.tbl-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid #cbd5e1;background:#e2e8f0;flex-shrink:0}
+
+/* Grade and Remarks Inputs */
+.grade-input{min-width:90px;font-weight:700}
+.remarks-input{min-width:110px;font-weight:700;transition:all .2s}
+.remarks-input.passed{color:#15803d;background:#f0fdf4;border-color:#86efac}
+.remarks-input.failed{color:#b91c1c;background:#fef2f2;border-color:#fca5a5}
+
+/* Badges for Passed/Failed */
+.badge-status{
+  display:inline-flex;
+  align-items:center;
+  padding:3px 10px;
+  border-radius:10px;
+  font-size:11px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+.badge-status.passed{background:#dcfce7;color:#166534;border:1px solid #86efac}
+.badge-status.failed{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+.badge-status.pending{background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1}
+
+/* Profile Card Styling */
+.profile-card{display:grid;gap:18px;max-width:480px}
+.profile-avatar-sec{display:flex;align-items:center;gap:18px;padding-bottom:14px;border-bottom:1px solid #e2e8f0}
+.prof-avatar-lg{
+  width:88px;
+  height:88px;
+  border-radius:50%;
+  object-fit:cover;
+  border:3px solid var(--blue-primary);
+  background:#f1f5f9;
+  box-shadow:0 4px 14px rgba(26,50,117,.2);
+  flex-shrink:0;
+}
+.avatar-actions{display:grid;gap:6px}
+.hint-text{color:#64748b;font-size:11px}
+.profile-details{display:grid;gap:12px}
+
+
 @media(max-width:800px){
   #app{grid-template-columns:1fr;padding:14px}
   .side{position:static;height:auto}

@@ -1,5 +1,4 @@
--- Run in Supabase: SQL Editor > New query > Run
-create table profiles(id uuid primary key references auth.users on delete cascade,full_name text,email text,role text not null default 'student' check(lower(trim(role)) in('admin','teacher','student')),created_at timestamptz default now());
+create table profiles(id uuid primary key references auth.users on delete cascade,full_name text,email text,role text not null default 'student' check(lower(trim(role)) in('admin','teacher','student')),avatar_url text,created_at timestamptz default now());
 create table classes(id bigint generated always as identity primary key,code text,name text not null,teacher_id uuid references profiles(id) on delete set null,day text,start_time time,end_time time,room text);
 create table enrollments(id bigint generated always as identity primary key,class_id bigint references classes on delete cascade,student_id uuid references profiles on delete cascade,unique(class_id,student_id));
 create table grades(id bigint generated always as identity primary key,class_id bigint references classes on delete cascade,student_id uuid references profiles on delete cascade,score numeric,remarks text,unique(class_id,student_id));
@@ -84,6 +83,7 @@ create policy s_admin on settings for all to authenticated using(my_role()='admi
 -- =========================================================================
 -- alter table public.profiles drop constraint if exists profiles_role_check;
 -- alter table public.profiles add constraint profiles_role_check check (lower(trim(role)) in ('admin', 'teacher', 'student'));
+-- alter table public.profiles add column if not exists avatar_url text;
 --
 -- create or replace function clean_profile_role() returns trigger language plpgsql as $$
 -- begin
