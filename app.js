@@ -1,8 +1,8 @@
 // 1) Paste your Supabase project values (Project Settings > API)
 const SUPABASE_URL='https://ggtfdkdbotoesxktugni.supabase.co',SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdndGZka2Rib3RvZXN4a3R1Z25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5OTQyNTIsImV4cCI6MjEwODU3MDI1Mn0.zBmv3WaIuRc7XmkHJJpfC3Xe2dEaWULi83tASX2gyqk';
-// Password-recovery links from email arrive with #...type=recovery (detect before Supabase clears the hash)
-let recovering=/type=recovery/.test(location.hash);
-const hashErr=new URLSearchParams(location.hash.slice(1)).get('error_description');
+// Password reset uses an emailed OTP code; otpOk=true once the code was verified (so a failed password update can be retried)
+let otpOk=false;
+
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const $=s=>document.querySelector(s),roles=['admin','teacher','student'],roleLabels={admin:'Admin',teacher:'Teacher',student:'Student'};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -34,25 +34,25 @@ const fail=m=>{
 };
 async function loadCfg(){cfg=Object.fromEntries((await rows('settings')).map(s=>[s.key,s.value]));const n=(cfg.university_name&&cfg.university_name!=='My University')?cfg.university_name:'National University';$('#uni').textContent=n;$('#uniS').textContent=n}
 const good=m=>{const o=$('#ok');o.textContent=m;o.hidden=false;$('#err').hidden=true};
-// Form modes: in (sign in) | up (sign up) | forgot (request reset link) | reset (set new password from email link)
+// Form modes: in (sign in) | up (sign up) | forgot (request OTP code by email) | reset (enter OTP code + new password)
 function setMode(m){const f=$('#loginForm');f.dataset.mode=m;
   const show=(id,v)=>{const el=$(id);el.hidden=!v;el.querySelectorAll('input,select').forEach(i=>i.disabled=!v)};
-  show('#nameF',m==='up');show('#roleF',m==='up');show('#emailF',m!=='reset');show('#passF',m!=='forgot');
-  $('#forgot').hidden=m!=='in';$('#toggle').hidden=m==='reset';
-  $('#submit').textContent={in:'Sign in',up:'Create account',forgot:'Send reset link',reset:'Update password'}[m];
-  $('#toggle').textContent={in:'Need an account? Sign up',up:'Have an account? Sign in',forgot:'Back to sign in'}[m]||'';
+  show('#nameF',m==='up');show('#roleF',m==='up');show('#codeF',m==='reset');show('#emailF',true);show('#passF',m!=='forgot');
+  $('#forgot').hidden=m!=='in'&&m!=='reset';$('#forgot').textContent=m==='reset'?'Resend code':'Forgot password?';if(m!=='reset')otpOk=false;
+  $('#submit').textContent={in:'Sign in',up:'Create account',forgot:'Send code',reset:'Reset password'}[m];
+  $('#toggle').textContent={in:'Need an account? Sign up',up:'Have an account? Sign in',forgot:'Back to sign in',reset:'Back to sign in'}[m]||'';
   $('#passL').textContent=m==='reset'?'New password':'Password';
   $('[name=password]').autocomplete=m==='in'?'current-password':'new-password';
   $('[name=password]').value='';$('#err').hidden=true;$('#ok').hidden=true}
 $('#loginForm').onsubmit=async e=>{e.preventDefault();const m=e.target.dataset.mode,f=Object.fromEntries(new FormData(e.target));
   if(m==='forgot'){
-    const{error}=await db.auth.resetPasswordForEmail(f.email.trim(),{redirectTo:location.href.split(/[?#]/)[0]});
+    const{error}=await db.auth.resetPasswordForEmail(f.email.trim());
     if(error)return fail(error.message);
-    return good('If an account exists for that email, a password reset link has been sent. Check your inbox (and spam folder).')}
+    setMode('reset');return good('We sent a verification code to '+f.email.trim()+'. Enter it below with your new password.')}
   if(m==='reset'){
-    const{error}=await db.auth.updateUser({password:f.password});
+    if(!otpOk){const{error:oe}=await db.auth.verifyOtp({email:f.email.trim(),token:f.code.trim(),type:'recovery'});if(oe)return fail('Invalid or expired code. Check the code in your email or tap Resend code.');otpOk=true}const{error}=await db.auth.updateUser({password:f.password});
     if(error)return fail(error.message);
-    recovering=false;await db.auth.signOut();history.replaceState(null,'',location.pathname+location.search);
+    otpOk=false;await db.auth.signOut();
     setMode('in');return good('Password updated! Please sign in with your new password.')}
   const up=m==='up';
  const role=f.role==='teacher'?'teacher':'student'; // admin accounts can't be self-registered
@@ -62,7 +62,7 @@ $('#loginForm').onsubmit=async e=>{e.preventDefault();const m=e.target.dataset.m
  if(up&&data.user){try{await db.from('profiles').update({role,full_name:f.full_name}).eq('id',data.user.id)}catch(_){}}
  enter(data.user)};
 $('#toggle').onclick=()=>setMode($('#loginForm').dataset.mode==='in'?'up':'in');
-$('#forgot').onclick=()=>setMode('forgot');
+$('#forgot').onclick=async()=>{if($('#loginForm').dataset.mode==='in')return setMode('forgot');const{error}=await db.auth.resetPasswordForEmail($('[name=email]').value.trim());error?fail(error.message):good('A new code has been sent to your email.')};
 async function enter(u){await loadCfg();const{data:p}=await db.from('profiles').select('*').eq('id',u.id).maybeSingle();
  if(!p){await db.auth.signOut();return fail('No active profile for this account. Contact an administrator.')}
  p.role=(p.role||'student').toLowerCase().trim();
@@ -122,8 +122,8 @@ const A={filU:id=>{uFilter=id;go(cur)},addC:()=>saveC(),editC:saveC,delC:del('cl
  saveG:async sid=>{const s=$('#s'+sid).value;await q(db.from('grades').upsert({class_id:gc,student_id:sid,score:s===''?null:+s,remarks:$('#r'+sid).value},{onConflict:'class_id,student_id'}));toast('Grade saved')},
  csv:()=>{const d=window.csv;if(!d.length)return toast('No data to export',1);const k=Object.keys(d[0]),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([[k,...d.map(r=>k.map(c=>`"${r[c]}"`))].join('\n')],{type:'text/csv'}));a.download='report.csv';a.click()}};
 
-db.auth.onAuthStateChange(ev=>{if(ev==='PASSWORD_RECOVERY'){recovering=true;$('#app').hidden=true;$('#login').hidden=false;setMode('reset')}});
+
 (async()=>{setMode('in');await loadCfg();const{data:{session}}=await db.auth.getSession();
-  if(hashErr){history.replaceState(null,'',location.pathname+location.search);setMode('forgot');return fail(decodeURIComponent(hashErr.replace(/\+/g,' '))+'. Enter your email to request a new reset link.')}
-  if(recovering&&session){setMode('reset');good('Enter your new password below.');return}
+
+
   if(session)enter(session.user)})();

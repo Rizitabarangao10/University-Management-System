@@ -13,6 +13,7 @@
 <option value="teacher">Teacher</option>
 </select></label>
 <label id="emailF">Email<input name="email" type="email" required autocomplete="email"></label>
+<label id="codeF" hidden>Verification code<input name="code" required inputmode="numeric" pattern="[0-9]{6,10}" maxlength="10" autocomplete="one-time-code" placeholder="Code from your email"></label>
 <label id="passF"><span id="passL">Password</span><input name="password" type="password" required minlength="6" autocomplete="current-password"></label>
 <button type="button" class="link forgot" id="forgot">Forgot password?</button>
 <button class="btn wide" id="submit">Sign in</button>
