@@ -14,7 +14,7 @@ html{
   overflow-x:hidden;
   -webkit-text-size-adjust:100%;
 }
-*{box-sizing:border-box}[hidden]{display:none!important}
+*{box-sizing:border-box}[hidden],#app[hidden],#login[hidden]{display:none!important}
 body{
   margin:0;
   min-height:100vh;
@@ -399,7 +399,7 @@ dialog form{display:grid;gap:14px}
 
 /* Responsive Layout for Mobile Phone Users (All Android & iOS Models) */
 @media(max-width:800px){
-  #app{
+  #app:not([hidden]){
     display:flex !important;
     flex-direction:column !important;
     padding-top:max(8px, env(safe-area-inset-top)) !important;
